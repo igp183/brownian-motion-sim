@@ -15,6 +15,7 @@ _deps/
 Makefile
 
 # Compiled objects / binaries
+src/main
 *.o
 *.obj
 *.a
