@@ -1,10 +1,6 @@
 #include "simulation.hpp"
 #include <iostream>
 
-const int n_particles = 10000;
-const double step_length = 1.0;
-const int n_steps = 1000;
-
 int main() {
     const int n_particles = 10000;
     const double step_length = 1.0;
