@@ -18,3 +18,11 @@ void Simulation::step() {
     y_[i] += dist(gen_);
   }
 }
+
+double Simulation::meanSquaredDisplacement() const {
+    double sum = 0.0;
+    for (int i = 0; i < n_; ++i) {
+        sum += x_[i] * x_[i] + y_[i] * y_[i];
+    }
+    return sum / n_;
+}
