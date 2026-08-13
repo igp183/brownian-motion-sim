@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(raylib REQUIRED)
 find_package(OpenMP REQUIRED)
 
-add_executable(brownian-motion-sim src/main.cpp)
+add_executable(brownian-motion-sim src/main.cpp src/simulation.cpp)
 
 target_link_libraries(brownian-motion-sim PRIVATE
     raylib
