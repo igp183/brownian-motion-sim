@@ -36,3 +36,10 @@ src/main
 # OS
 .DS_Store
 Thumbs.db
+
+# LaTeX build artifacts
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.synctex.gz
