@@ -1,6 +1,7 @@
 \documentclass[11pt]{article}
 \usepackage[a4paper, margin=2.5cm]{geometry}
 \usepackage[utf8]{inputenc}
+\usepackage{lmodern}
 \usepackage[T1]{fontenc}
 \usepackage{amsmath, amssymb}
 \usepackage{physics}
@@ -23,6 +24,30 @@ resistance.
 \subsection{The Drag Force}
 When air resistance is included, the projectile is subject to a drag force
 $\vb{F}_r$ that always acts in the opposite direction of the velocity $\vb{v}$.
+
+The form of the drag force depends on the Reynolds number,
+\begin{equation}
+    \mathrm{Re} = \frac{Dv\rho}{\eta},
+\end{equation}
+where $D$ is the projectile's size, $\rho$ the density of air, and
+$\eta$ its viscosity.
+
+$\mathrm{Re}$ is the ratio of inertial to viscous forces, inside of 
+a moving fluid. If we have a low $\mathrm{Re}$, viscous forces 
+dominate and the drag force is linear,
+\begin{equation}
+    F_r \propto v \qquad \text{(linear, or Stokes, drag)},
+\end{equation}
+which is a regime typical of small objects moving slowly 
+through a viscous fluid, such as a droplet.
+
+On the other hand, if we have a high $\mathrm{Re}$, inertial forces
+dominate and the drag force is quadratic,
+\begin{equation}
+    F_r \propto v^2 \qquad \text{(quadratic, or Newtonian, drag)},
+\end{equation}
+which is a regime typical of bigger objects moving through air,
+such as a thrown ball or a fired projectile.
 
 \section{System of Differential Equations}
 
