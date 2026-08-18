@@ -22,12 +22,16 @@ provides the maximum range, in the absence of air resistance, the answer is
 famously \(45^\circ\). However this is not the case if we include air
 resistance.
 \subsection{The Drag Force}
+\subsection{The Drag Force}
 When air resistance is included, the projectile is subject to a drag force
 $\vb{F}_r$ that always acts in the opposite direction of the velocity $\vb{v}$.
+Throughout this document, bold symbols denote vectors (e.g. $\vb{v}$),
+while the same symbol in italics denotes its magnitude (e.g.
+$v = |\vb{v}|$).
 
 The form of the drag force depends on the Reynolds number,
 \begin{equation}
-    \mathrm{Re} = \frac{Dv\rho}{\eta},
+\mathrm{Re} = \frac{Dv\rho}{\eta},
 \end{equation}
 where $D$ is the projectile's size, $\rho$ the density of air, and
 $\eta$ its viscosity.
@@ -39,7 +43,15 @@ dominate and the drag force is linear,
     F_r \propto v \qquad \text{(linear, or Stokes, drag)},
 \end{equation}
 which is a regime typical of small objects moving slowly 
-through a viscous fluid, such as a droplet.
+through a viscous fluid, such as a droplet. This regime holds for
+$\mathrm{Re} \lesssim 1$; for example, a $10\ \mu\mathrm{m}$ fog
+droplet settling in air at roughly $2.7\ \mathrm{cm/s}$ has
+$\mathrm{Re} \approx 0.016$ \cite{lubarda2022}. Writing this as a
+vector,
+\begin{equation}
+    \vb{F}_r = -b\,\vb{v}, \qquad b = 3\pi\eta D,
+\end{equation}
+where $b$ is the linear drag coefficient.
 
 On the other hand, if we have a high $\mathrm{Re}$, inertial forces
 dominate and the drag force is quadratic,
@@ -47,7 +59,18 @@ dominate and the drag force is quadratic,
     F_r \propto v^2 \qquad \text{(quadratic, or Newtonian, drag)},
 \end{equation}
 which is a regime typical of bigger objects moving through air,
-such as a thrown ball or a fired projectile.
+such as a thrown ball or a fired projectile. This regime holds for
+speeds between approximately $0.25\ \mathrm{m/s}$ and $53\ \mathrm{m/s}$,
+corresponding to $10^3 < \mathrm{Re} < 2\times10^5$
+\cite{chudinov2013}.
+
+Writing the quadratic drag force as a magnitude times a unit vector
+opposing $\vb{v}$,
+\begin{equation}
+    \vb{F}_r = -C\,v^2\,\frac{\vb{v}}{v} = -C\,v\,\vb{v},
+    \qquad v = |\vb{v}| = \sqrt{v_x^2+v_y^2},
+\end{equation}
+where $C$ is a drag coefficient, assumed constant.
 
 \section{System of Differential Equations}
 
@@ -56,5 +79,19 @@ such as a thrown ball or a fired projectile.
 \section{Stopping Condition}
 
 \section{How this turns into Code}
+
+\begin{thebibliography}{9}
+
+\bibitem{lubarda2022}
+M.~V.~Lubarda, V.~A.~Lubarda,
+\emph{A review of the analysis of wind-influenced projectile motion in the presence of linear and nonlinear drag force},
+Archive of Applied Mechanics \textbf{92} (2022) 1997--2017.
+
+\bibitem{chudinov2013}
+P.~S.~Chudinov, V.~A.~Eltyshev, Y.~A.~Barykin,
+\emph{Simple analytical description of projectile motion in a medium with quadratic drag force},
+Latin American Journal of Physics Education \textbf{7} (2013).
+
+\end{thebibliography}
 
 \end{document}
