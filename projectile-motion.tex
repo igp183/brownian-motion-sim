@@ -21,6 +21,21 @@ described by Newton's second law. If we ask the question of which angle
 provides the maximum range, in the absence of air resistance, the answer is
 famously \(45^\circ\). However this is not the case if we include air
 resistance.
+
+\subsection{Newton's Second Law}
+Newton's second law for the projectile reads
+\begin{equation}
+\vb{F}_r + \vb{F}_g = m\vb{a},
+\end{equation}
+where $\vb{F}_g = (0, -mg)$ is the force of gravity. Writing this
+equation component by component,
+\begin{equation}
+    a_x = \frac{F_{r,x}}{m}, \qquad
+    a_y = -g - \frac{F_{r,y}}{m},
+\end{equation}
+where $F_{r,x}$ and $F_{r,y}$ are still unknown, since we have not yet
+written $\vb{F}_r$ explicitly.
+
 \subsection{The Drag Force}
 When air resistance is included, the projectile is subject to a drag force
 $\vb{F}_r$ that always acts in the opposite direction of the velocity $\vb{v}$.
@@ -98,12 +113,11 @@ of the velocity but has length one. So the drag force is
 where the minus sign flips the direction, and one factor of $v$
 cancels against the denominator.
 
-\subsection{Newton's Second Law}
-Newton's second law for the projectile reads
+Substituting this into the component equations above,
 \begin{equation}
-\vb{F}_r + \vb{F}_g = m\vb{a},
+    a_x = -\frac{C}{m}\,v\,v_x, \qquad
+    a_y = -g - \frac{C}{m}\,v\,v_y.
 \end{equation}
-where $\vb{F}_g = (0, -mg)$ is the force of gravity.
 
 \section{System of Differential Equations}
 
