@@ -121,6 +121,31 @@ Substituting this into the component equations above,
 
 \section{System of Differential Equations}
 
+The equations for $a_x$ and $a_y$ derived above are combined with the
+definitions of velocity and acceleration,
+\begin{equation}
+    \vb{v} = \frac{d\vb{r}}{dt}, \qquad
+    \vb{a} = \frac{d\vb{v}}{dt} = \frac{d^2\vb{r}}{dt^2},
+\end{equation}
+together with the initial condition
+\begin{equation}
+    \vb{v}(t=0) = \vb{v}_0,
+\end{equation}
+where $\vb{v}_0$ is a given constant.
+
+Written out, this gives the following system of differential
+equations:
+\begin{equation}
+    \frac{dv_x}{dt} = -\frac{C}{m}\,v\,v_x, \qquad
+    \frac{dv_y}{dt} = -g - \frac{C}{m}\,v\,v_y,
+\end{equation}
+\begin{equation}
+    \frac{dx}{dt} = v_x, \qquad
+    \frac{dy}{dt} = v_y.
+\end{equation}
+
+In principle, this system cannot be solved analytically.
+
 \section{Numerical Integration}
 
 \section{Stopping Condition}
