@@ -117,11 +117,12 @@ Substituting this into the component equations above,
 \begin{equation}
     a_x = -\frac{C}{m}\,v\,v_x, \qquad
     a_y = -g - \frac{C}{m}\,v\,v_y.
+    \label{eq:accel_components}
 \end{equation}
 
 \section{System of Differential Equations}
 
-The equations for $a_x$ and $a_y$ derived above are combined with the
+The equations for $a_x$ and $a_y$ derived above are completed by the
 definitions of velocity and acceleration,
 \begin{equation}
     \vb{v} = \frac{d\vb{r}}{dt}, \qquad
@@ -144,9 +145,80 @@ equations:
     \frac{dy}{dt} = v_y.
 \end{equation}
 
-In principle, this system cannot be solved analytically.
+In principle, this system cannot be solved analytically. This is due
+to the nonlinear coupling introduced by $v = \sqrt{v_x^2+v_y^2}$:
+unlike the linear drag case, where the equation for $v_x$ depends only
+on $v_x$ and can be solved on its own, here the equation for $v_x$
+also depends on $v_y$ (and vice versa), so the two cannot be solved
+independently.
 
 \section{Numerical Integration}
+
+We have just shown that this system of differential equations cannot
+be solved analytically. This does not mean the motion is unknown,
+only that we cannot write $\vb{v}(t)$ and $\vb{r}(t)$ as a closed
+formula. Instead, we approximate them numerically, by advancing the
+motion one small step at a time rather than jumping straight to the
+answer.
+
+One way to do this is the following. We split the flight of the
+projectile, of total duration $\tau$, into a large number of steps of
+small duration $\Delta t$, say $\Delta t/\tau \leq 10^{-3}$, with
+$\tau$ estimated from the case without air resistance. We then assume
+that, within each such short step, $\vb{v}$ and $\vb{a}$ do not change
+appreciably, i.e.\ they are approximately constant.
+
+This assumption lets us reuse the constant-acceleration formulas from
+introductory kinematics,
+\begin{equation}
+    v = v_0 + at, \qquad x = x_0 + v_0 t + \tfrac{1}{2}at^2,
+    \label{eq:kinematics}
+\end{equation}
+but only over one short step at a time, since here $\vb{a}$ is not
+truly constant -- it depends on the velocity, which keeps changing.
+Concretely, this comes from the definition of acceleration,
+$\vb{a} = d\vb{v}/dt$, which for a small but finite $\Delta t$ gives
+\begin{equation}
+    \vb{a} \approx \frac{\vb{v}(t+\Delta t) - \vb{v}(t)}{\Delta t}
+    \quad \Longrightarrow \quad
+    \vb{v}(t+\Delta t) \approx \vb{v}(t) + \vb{a}(t)\,\Delta t.
+\end{equation}
+Writing $\vb{v}_n$ for $\vb{v}(t_n)$, and $\vb{a}_n$ for the
+acceleration evaluated using the velocity at step $n$ (from
+Eq.~\eqref{eq:accel_components}), this is
+\begin{equation}
+    \vb{v}_{n+1} = \vb{v}_n + \vb{a}_n \Delta t, \qquad
+    \vb{a}_n = \left(-\frac{C}{m}v_n v_{n,x},\; -g-\frac{C}{m}v_n
+    v_{n,y}\right).
+\end{equation}
+In other words, we repeatedly apply the ordinary constant-acceleration
+formula, but only for one short step, and we recompute $\vb{a}_n$ from
+the updated velocity before taking the next step.
+
+Similarly, for the position, the second formula in
+Eq.~\eqref{eq:kinematics} gives
+\begin{equation}
+    \vb{r}_{n+1} = \vb{r}_n + \vb{v}_n \Delta t +
+    \frac{1}{2}\vb{a}_n(\Delta t)^2.
+\end{equation}
+The last term is negligible compared to the first as $\Delta t \to
+0$. To see why, compare the two terms for a typical speed
+$v \sim 20\ \mathrm{m/s}$, acceleration $a \sim 10\ \mathrm{m/s^2}$,
+and $\Delta t = 10^{-3}\ \mathrm{s}$:
+\begin{equation}
+    v\,\Delta t \sim 2\times10^{-2}\ \mathrm{m},
+    \qquad
+    \tfrac{1}{2}a(\Delta t)^2 \sim 5\times10^{-6}\ \mathrm{m}.
+\end{equation}
+The quadratic term is smaller than the linear one by a factor on the
+order of $\Delta t$ itself, since it carries an extra power of
+$\Delta t$; for $\Delta t \ll 1$, squaring makes it far smaller still.
+This is why the term is said to be of order $O[(\Delta t)^2]$: it
+shrinks much faster than the linear term as $\Delta t$ is made
+smaller, and can safely be dropped, leaving
+\begin{equation}
+    \vb{r}_{n+1} = \vb{r}_n + \vb{v}_n \Delta t.
+\end{equation}
 
 \section{Stopping Condition}
 
