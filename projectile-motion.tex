@@ -315,6 +315,169 @@ above the ground and the first point below it.
 
 \section{How this turns into Code}
 
+This section outlines how the equations above map onto a program. It
+is intentionally abstracted: the purpose is to define the structure 
+and the reasoning behind it, not the syntax. For the simulation itself,
+the language chosen was C++, but the same structure could be implemented 
+in any language.
+
+\subsection{Reducing the parameters}
+
+Before writing anything, it is worth noticing that $C$ and $m$ never
+appear separately in the equations of motion, only ever in the
+combination $C/m$. Defining
+\begin{equation}
+    k \equiv \frac{C}{m},
+\end{equation}
+the mass drops out of the dynamics, and the accelerations
+become
+\begin{equation}
+    a_x = -k\,v\,v_x, \qquad a_y = -g - k\,v\,v_y .
+    \label{eq:accel_k}
+\end{equation}
+The terminal velocity also simplifies to $v_t = \sqrt{g/k}$.
+
+The value of $k$ is not arbitrary. Comparing $F_r = Cv^2$ with the
+standard drag equation $F_r = \tfrac{1}{2}\rho C_d A v^2$ gives
+\begin{equation}
+    C = \tfrac{1}{2}\rho\,C_d\,A ,
+    \qquad\text{so}\qquad
+    k = \frac{\rho\,C_d\,A}{2m},
+\end{equation}
+where $\rho$ is the density of air, $C_d$ a dimensionless
+shape-dependent coefficient, and $A$ the frontal area. A program can
+therefore expose $k$ at three levels: as a named preset, as a single
+number, or as the individual quantities $\rho$, $C_d$, $A$ and $m$
+from which it is computed.
+
+For interpreting results, however, neither $C$ nor $k$ is the natural
+parameter, since neither tells us how strong the drag is compared to
+gravity. That comparison is made by the dimensionless group
+\begin{equation}
+    \beta \equiv \frac{k\,v_0^2}{g} = \left(\frac{v_0}{v_t}\right)^2 ,
+\end{equation}
+To see that $\beta$ is dimensionless, recall that $k$ has units of
+inverse length, $[k] = \mathrm{m}^{-1}$, since it multiplies $v\,v_x$
+(units $\mathrm{m}^2/\mathrm{s}^2$) to produce an acceleration (units
+$\mathrm{m}/\mathrm{s}^2$). Then
+\begin{equation}
+    [\beta] = [k]\,\frac{[v_0]^2}{[g]}
+    = \mathrm{m}^{-1} \cdot
+    \frac{\mathrm{m}^2/\mathrm{s}^2}{\mathrm{m}/\mathrm{s}^2}
+    = \mathrm{m}^{-1}\cdot\mathrm{m} = 1,
+\end{equation}
+confirming that $\beta$ is a pure number.
+
+\subsection{Structure}
+
+The natural decomposition follows the derivation itself. Each layer
+uses only the one below it:
+\begin{itemize}
+    \item \textbf{Acceleration}: given a state $(x, y, v_x, v_y)$
+    and $k$, return $(a_x, a_y)$. This is based on Eq.~\eqref{eq:accel_k}.
+    \item \textbf{Step}: given a state, $\Delta t$ and $k$, return
+    the state one step later.
+    \item \textbf{Trajectory}: given launch conditions, step until
+    a stopping test fires; return the range and which test fired.
+    \item \textbf{Sweeps}: run trajectories over a grid of
+    $\theta$ to find the optimal angle, and over a grid of $\beta$ to
+    see how that angle varies.
+\end{itemize}
+Each of these is a pure function: its output depends only on its
+inputs. This keeps them independently testable
+and makes the parallelism in the next section trivially safe.
+
+Two structural points are worth fixing early. First, the physics core
+should not depend on any graphics library; rendering may depend on
+the core, never the reverse. This allows the same code to run
+headless for large sweeps and interactively for exploration. Second,
+because the innermost functions are called millions of times, they
+should be defined in headers so the compiler can inline them; the
+layering above is for human readers, and should cost nothing at
+runtime.
+
+\subsection{Choosing $\Delta t$}
+
+The criterion $\Delta t/\tau \leq 10^{-3}$ requires an estimate of the
+flight time $\tau$, taken from the drag-free case,
+\begin{equation}
+    \tau \approx \frac{2 v_0 \sin\theta}{g} .
+\end{equation}
+Since $\tau$ depends on $\theta$, so does the appropriate $\Delta t$.
+Deriving it per trajectory gives every angle a comparable number of
+steps and a comparable relative error, whereas a single global
+$\Delta t$ leaves shallow angles over-resolved and steep ones
+under-resolved. When $\Delta t$ is instead supplied directly, the
+program should check the criterion and warn when it is violated,
+which will happen for near-horizontal launches, where $\tau \to 0$.
+
+\subsection{Performance}
+
+Two decisions dominate, and both are structural.
+
+The first is to avoid storing trajectories during sweeps. Only the
+final range is needed, so the entire state is four numbers and no
+memory needs to be allocated at all. Only the interactive mode
+requires the full path, and it draws only a handful of trajectories.
+
+The second is where to parallelise. The Euler loop is inherently
+sequential, each step depends on the previous one, and must not
+be split. The sweeps, by contrast, consist of completely independent
+trajectories, one per $(\beta, \theta)$ pair. Flattening that grid
+into a single loop and distributing it across threads is safe
+precisely because the trajectory function is pure.
+
+\subsection{Comparing the stopping tests}
+
+The stopping test does not affect the dynamics; it only decides when
+we stop reading the result. A single trajectory can therefore record
+the step at which \emph{each} test would have fired, and report both
+ranges. This halves the work relative to simulating twice, and
+guarantees the two are compared on the same trajectory rather than on
+two separately computed ones.
+
+Whether the run ends at the first or the last test to fire can then be
+a user-facing option, letting the same simulation serve both as the
+result and as the measurement of the discrepancy discussed in
+Section~4.
+
+\subsection{Validation}
+
+Two independent checks are available, and both should be run before
+any result is trusted.
+
+The first is physical: as $\beta \to 0$, the optimal angle must
+approach $45^\circ$. This tests whether the model has been
+implemented correctly.
+
+The second is numerical: running the same case with $\Delta t$,
+$\Delta t/2$ and $\Delta t/4$ should show the answer settling down.
+Since Euler's method is first order, the change between successive
+refinements should itself halve each time. If it does not, the
+integrator is wrong, regardless of how plausible the trajectories
+look. This plays the same role that a known analytical limit plays
+for the physics.
+
+\subsection{Visualisation}
+
+The results that matter here are curves rather than motion: the range
+as a function of launch angle, $d(\theta)$, and the optimal angle as
+a function of drag, $\theta_{\mathrm{opt}}(\beta)$. For a written
+report these are best produced from exported data.
+
+There is, however, one genuinely interactive element. Although a
+single trajectory is static once computed, the \emph{family} of
+trajectories is not: varying $\beta$ continuously deforms the whole
+fan of paths and slides the optimal angle away from $45^\circ$. An
+interactive view showing a fan of trajectories at different launch
+angles, with the optimal one highlighted, alongside a live plot of
+$d(\theta)$, makes the central result of this project directly
+visible. Recomputing a few dozen trajectories per frame is negligible
+work, so this costs nothing in performance.
+
+Both modes should share the same core, differing only in what they do
+with the results: write them to a file, or draw them.
+
 \begin{thebibliography}{9}
 
 \bibitem{lubarda2022}
