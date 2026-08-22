@@ -9,4 +9,4 @@ fi
 
 cmake --build build
 
-exec ./build/brownian-motion-sim
+exec ./build/projectile-motion-sim
