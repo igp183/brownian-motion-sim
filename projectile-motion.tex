@@ -155,7 +155,7 @@ independently.
 \section{Numerical Integration}
 
 We have just shown that this system of differential equations cannot
-be solved analytically. This does not mean the motion is unknown,
+be solved analytically. This does not mean the motion is unknown --
 only that we cannot write $\vb{v}(t)$ and $\vb{r}(t)$ as a closed
 formula. Instead, we approximate them numerically, by advancing the
 motion one small step at a time rather than jumping straight to the
@@ -221,6 +221,97 @@ smaller, and can safely be dropped, leaving
 \end{equation}
 
 \section{Stopping Condition}
+
+The scheme above advances the projectile step by step for as long as we
+let it. What it does not tell us is \emph{when to stop}. The projectile
+has landed when its height returns to zero, and the horizontal distance
+covered at that moment is the range, $d$. We therefore need a test,
+applied at every step, that tells us whether the ground has been
+reached.
+
+\subsection{A test based on the vertical velocity}
+
+One natural test comes from the case without air resistance. There the
+vertical velocity is simply
+\begin{equation}
+    v_y(t) = v_{0,y} - g t,
+\end{equation}
+which starts positive as the projectile climbs, passes through zero at
+the top, and turns negative on the way down. The trajectory is a
+parabola, symmetric about its peak, so the projectile comes back down
+exactly as fast as it went up: at the moment it lands, $v_y$ has
+reached $-v_{0,y}$. This gives a possible stopping test,
+\begin{equation}
+    (v_y)_{n+1} \leq -v_{0,y},
+    \label{eq:stop_vy}
+\end{equation}
+which is convenient, since $v_y$ is already computed at every step.
+
+\subsection{What drag does to this test}
+
+Drag opposes the motion at all times, so it brakes the projectile on
+the way up \emph{and} on the way down. The up-down symmetry of the
+parabola is therefore lost. Because drag continuously removes energy
+from the motion and never returns any, the projectile arrives at the
+ground moving more slowly than it left it,
+\begin{equation}
+    |v_{y,\text{landing}}| < v_{0,y}
+    \qquad \text{whenever } C > 0 ,
+    \label{eq:landing_bound}
+\end{equation}
+with equality only in the drag-free case.
+
+This means Eq.~\eqref{eq:stop_vy} is not met at the instant of
+landing. It may still be met slightly \emph{after} it: below the
+ground the projectile keeps speeding up, and $|v_y|$ may yet reach
+$v_{0,y}$. Whether it does depends on the terminal velocity
+$v_t = \sqrt{mg/C}$, the largest downward speed drag permits:
+\begin{itemize}
+    \item if $v_t > v_{0,y}$ (weak drag), the test is met a little
+    below ground, and the simulation stops slightly late;
+    \item if $v_t \leq v_{0,y}$ (strong drag), it is never met, and
+    the simulation does not stop on its own.
+\end{itemize}
+In the first case the overshoot is small, and this is also the regime
+where the $45^\circ$ result is recovered. The overshoot grows with
+$C$, however, and every step taken below ground still adds to $x$, so
+the range comes out slightly too large.
+
+\subsection{A test based on the height}
+
+The most direct test is to ask the question itself: the projectile has
+landed when its height is no longer positive,
+\begin{equation}
+    y_{n+1} \leq 0 .
+    \label{eq:stop_y}
+\end{equation}
+
+\subsection{Comparing the two}
+
+Rather than choose between them, we implement both and let the
+simulation measure the difference. The loop stops when
+\begin{equation}
+    \underbrace{(v_y)_{n+1} \leq -v_{0,y}}_{\text{velocity test}}
+    \quad\text{or}\quad
+    \underbrace{y_{n+1} \leq 0}_{\text{height test}}
+    \quad\text{or}\quad
+    \underbrace{n > n_{\max}}_{\text{step limit}} ,
+\end{equation}
+recording which one triggered. The step limit is required because, as
+shown above, the velocity test alone may never be met.
+
+Running both across a range of $C$ then measures the discrepancy
+rather than assuming it. We expect the relative difference in range,
+$(d_{v_y} - d_y)/d_y$, to vanish as $C \to 0$ and to grow with $C$;
+where it becomes appreciable is precisely where the two tests stop
+agreeing. It is also worth checking whether the optimal angle
+$\theta$ is affected at all, since a bias in $d$ does not necessarily
+shift the angle that maximises it.
+
+Once the loop stops, the range is $d = x_{n+1}$. Since the final step
+generally carries the projectile just past $y = 0$, a more accurate
+value is obtained by interpolating linearly between the last point
+above the ground and the first point below it.
 
 \section{How this turns into Code}
 
